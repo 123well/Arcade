@@ -2,6 +2,7 @@ from PIL import Image
 import arcade
 import io
 
+SPEED = 4
 dictionary = {
     "shape": [120, 100],
     "moving": [
@@ -129,12 +130,58 @@ class MyGame(arcade.Window):
 
         self.room_sprite_list = arcade.SpriteList()
         self.room_sprite_list.append(self.room_sprite)
+        self.player_texture = arcade.load_texture(":resources:images/enemies/slimeBlue.png")
+        self.camera = arcade.camera.Camera2D()
+        self.setup()
+
+    def setup(self):
+        self.player_sprite_list = arcade.SpriteList()
+        self.player = arcade.Sprite(self.player_texture, scale=2)
+        self.player.center_x = 300
+        self.player.center_y = 700
+        self.physics_engine = arcade.PhysicsEnginePlatformer(
+            self.player, self.room_sprite_list, gravity_constant=0.07)
+        self.player_sprite_list.append(self.player)
+
+    def center_camera_to_player(self):
+        screen_center_x = self.player.center_x - (self.camera.viewport_width / 2)
+        screen_center_y = self.player.center_y - (self.camera.viewport_height / 2)
+
+        # Не двигаем камеру ниже нуля
+        screen_center_x = max(screen_center_x, 0)
+        screen_center_y = max(screen_center_y, 0)
+
+        player_centered = screen_center_x, screen_center_y
+        self.camera.position = player_centered
 
     def on_draw(self):
         self.clear()
+        self.camera.use()
         self.room_sprite_list.draw()
+        self.player_sprite_list.draw()
+
+    def on_update(self, delta_time: float):
+        self.physics_engine.update()
+        self.center_camera_to_player()
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.UP:
+            self.player.change_y = SPEED
+        elif key == arcade.key.DOWN:
+            self.player.change_y = -SPEED
+        elif key == arcade.key.LEFT:
+            self.player.change_x = -SPEED
+        elif key == arcade.key.RIGHT:
+            self.player.change_x = SPEED
+
+    def on_key_release(self, key, modifiers):
+        if key in [arcade.key.UP, arcade.key.DOWN]:
+            self.player.change_y = 0
+        if key in [arcade.key.LEFT, arcade.key.RIGHT]:
+            self.player.change_x = 0
 
 
 if __name__ == "__main__":
     game = MyGame()
+    arcade.run()
     arcade.run()
