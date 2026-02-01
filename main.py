@@ -60,12 +60,12 @@ def create_block(x, y, output_path='block.png'):
 
 
 def make_room_walls(size_x, size_y):
-    corner = Image.open('biom1wall2.png').resize((15, 15), 0)
-    wall = Image.open('biom1wall1.png').resize((15, 15), 0)
-    empty111 = Image.open('biom1wall0.png').resize((15, 15), 0)
+    corner = Image.open('biom1wall2.png').resize((15 * 5, 15 * 5), 0)
+    wall = Image.open('biom1wall1.png').resize((15 * 5, 15 * 5), 0)
+    empty111 = Image.open('biom1wall0.png').resize((15 * 5, 15 * 5), 0)
     exits = dictionary['exits']
 
-    result = Image.new('RGBA', (size_x * 15, size_y * 15), (0, 0, 0, 0))
+    result = Image.new('RGBA', (size_x * 15 * 5, size_y * 15 * 5), (0, 0, 0, 0))
 
     for tile_row in range(size_y):
         for tile_col in range(size_x):
@@ -104,8 +104,8 @@ def make_room_walls(size_x, size_y):
             else:
                 continue
 
-            x_c = tile_col * 15
-            y_c = tile_row * 15
+            x_c = tile_col * 15 * 5
+            y_c = tile_row * 15 * 5
 
             result.paste(current_tile, (x_c, y_c), current_tile)
     return result
@@ -124,8 +124,8 @@ class MyGame(arcade.Window):
 
         self.room_sprite = arcade.Sprite()
         self.room_sprite.texture = texture
-        self.room_sprite.center_x = self.width // 2
-        self.room_sprite.center_y = self.height // 2
+        self.room_sprite.center_x = dictionary['shape'][0] * 5 * 1.5
+        self.room_sprite.center_y = dictionary['shape'][1] * 5 * 1.5
 
         self.room_sprite_list = arcade.SpriteList()
         self.room_sprite_list.append(self.room_sprite)
