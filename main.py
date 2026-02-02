@@ -85,7 +85,7 @@ def make_room_walls(size_x, size_y):
                 if not (3 in exits and tile_row in [size_y - 2, size_y - 3, size_y - 4]):
                     current_tile = wall
             elif tile_row == size_y - 1:
-                current_tile = wall.rotate(180)
+                current_tile = wall.rotate(90)
             elif tile_col == 0:
                 if not ((2 in exits and tile_row in [1, 2, 3]) or (3 in exits and tile_row in [size_y - 2, size_y - 3, size_y - 4])):
                     current_tile = wall.rotate(90)
@@ -139,21 +139,19 @@ class MyGame(arcade.Window):
             walls=None
         )
 
-        self.camera.viewport = (0, 0, self.width, self.height)
-        self.center_camera_to_player()
-
-    def center_camera_to_player(self):
-        self.camera.position = (self.player.center_x, self.player.center_y)
-
     def on_draw(self):
         self.clear(arcade.color.DARK_BLUE_GRAY)
+        self.camera.use()
         self.wall_list.draw()
         self.player_sprite_list.draw()
 
-
     def on_update(self, delta_time: float):
         self.physics_engine.update()
-        self.center_camera_to_player()
+        position = (
+            self.player.center_x,
+            self.player.center_y
+        )
+        self.camera.position = position
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.LEFT:
