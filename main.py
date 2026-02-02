@@ -72,32 +72,43 @@ def make_room_walls(size_x, size_y):
         for tile_col in range(size_x):
             current_tile = None
 
-            # Логика определения, есть ли здесь стена
             if (tile_row == 0 and tile_col == 0) or (tile_row == size_y - 5 and tile_col == 0 and 3 in exits):
-                current_tile = corner.rotate(90)
-            elif (tile_row == 0 and tile_col == size_x - 1) or (tile_row == size_y - 5 and tile_col == size_x - 1 and 4 in exits):
-                current_tile = corner
-            elif (tile_row == size_y - 1 and tile_col == 0) or (tile_row == 4 and tile_col == 0 and 2 in exits):
-                current_tile = corner.rotate(180)
-            elif (tile_row == size_y - 1 and tile_col == size_x - 1) or (tile_row == 4 and tile_col == size_x - 1 and 1 in exits):
                 current_tile = corner.rotate(270)
+
+            elif (tile_row == 0 and tile_col == size_x - 1) or (
+                    tile_row == size_y - 5 and tile_col == size_x - 1 and 4 in exits):
+                current_tile = corner.rotate(180)
+
+            elif (tile_row == size_y - 1 and tile_col == 0) or (tile_row == 4 and tile_col == 0 and 2 in exits):
+                current_tile = corner.rotate(90)
+
+            elif (tile_row == size_y - 1 and tile_col == size_x - 1) or (
+                    tile_row == 4 and tile_col == size_x - 1 and 1 in exits):
+                current_tile = corner
+
             elif tile_row == 0:
-                if not (3 in exits and tile_row in [size_y - 2, size_y - 3, size_y - 4]):
-                    current_tile = wall
+                if 3 in exits and tile_row in [size_y - 2, size_y - 3, size_y - 4]:
+                    continue
+                current_tile = wall.rotate(180)
             elif tile_row == size_y - 1:
-                current_tile = wall.rotate(90)
+                current_tile = wall
             elif tile_col == 0:
-                if not ((2 in exits and tile_row in [1, 2, 3]) or (3 in exits and tile_row in [size_y - 2, size_y - 3, size_y - 4])):
-                    current_tile = wall.rotate(90)
+                if 2 in exits and tile_row in [1, 2, 3]:
+                    continue
+                elif 3 in exits and tile_row in [size_y - 2, size_y - 3, size_y - 4]:
+                    continue
+                current_tile = wall.rotate(90)
             elif tile_col == size_x - 1:
-                if not ((1 in exits and tile_row in [1, 2, 3]) or (4 in exits and tile_row in [size_y - 2, size_y - 3, size_y - 4])):
-                    current_tile = wall.rotate(270)
+                if 1 in exits and tile_row in [1, 2, 3]:
+                    continue
+                elif 4 in exits and tile_row in [size_y - 2, size_y - 3, size_y - 4]:
+                    continue
+                current_tile = wall.rotate(270)
 
             if current_tile is not None:
                 x = tile_col * tile_size
                 y = tile_row * tile_size
                 wall_images.append((current_tile, x, y))
-
     return wall_images
 
 
@@ -172,3 +183,4 @@ class MyGame(arcade.Window):
 if __name__ == "__main__":
     game = MyGame()
     arcade.run()
+
