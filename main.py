@@ -3,8 +3,10 @@ import math
 import json
 import os
 
+import game
+
 SCREEN_WIDTH, SCREEN_HEIGHT = 1024, 768
-TITLE = "CYBER NEXUS"
+TITLE = "LIGHTWALKER"
 SETTINGS_FILE = "settings.json"
 
 CYBER_GREEN = (0, 255, 128)
@@ -21,10 +23,10 @@ class Slider:
         self.color, self.drag = color, False
 
     def draw(self):
-        arcade.draw_rectangle_filled(self.x + self.w / 2, self.y, self.w, self.h, (30, 40, 70))
+        arcade.draw_lbwh_rectangle_filled(self.x + self.w / 2, self.y, self.w, self.h, (30, 40, 70))
         fill_w = (self.val - self.min_v) / (self.max_v - self.min_v) * self.w
-        arcade.draw_rectangle_filled(self.x + fill_w / 2, self.y, fill_w, self.h, self.color)
-        arcade.draw_rectangle_outline(self.x + self.w / 2, self.y, self.w, self.h, (100, 150, 200), 2)
+        arcade.draw_lbwh_rectangle_filled(self.x + fill_w / 2, self.y, fill_w, self.h, self.color)
+        arcade.draw_lbwh_rectangle_outline(self.x + self.w / 2, self.y, self.w, self.h, (100, 150, 200), 2)
         handle_x = self.x + (self.val - self.min_v) / (self.max_v - self.min_v) * self.w
         arcade.draw_circle_filled(handle_x, self.y, self.h / 2 + 3, self.color)
 
@@ -34,8 +36,9 @@ class Slider:
 
 
 class MainMenu(arcade.View):
-    def __init__(self):
+    def __init__(self, win):
         super().__init__()
+        self.win = win
         self.load_settings()
         self.state = "main"
         self.selected = 0
@@ -91,18 +94,16 @@ class MainMenu(arcade.View):
         size = 58 + math.sin(self.pulse) * 5
         arcade.draw_text(TITLE, SCREEN_WIDTH / 2, SCREEN_HEIGHT - 90, CYBER_GREEN, size, anchor_x="center",
                          font_name="Arial", bold=True)
-        arcade.draw_text("CYBER REALMS", SCREEN_WIDTH / 2, SCREEN_HEIGHT - 130, CYBER_BLUE, 24, anchor_x="center",
-                         font_name="Arial")
         items = ["НОВАЯ ИГРА", "НАСТРОЙКИ", "ВЫХОД"]
         for i, item in enumerate(items):
             y = SCREEN_HEIGHT / 2 + 30 - i * 80
             hover = i == self.selected
-            glow = HOVER_GREEN if i != 1 else HOVER_BLUE
+            glow = CYBER_GREEN if i != 1 else CYBER_BLUE
             if hover:
-                arcade.draw_rectangle_filled(SCREEN_WIDTH / 2, y, 280 + math.sin(self.pulse * 4) * 15, 55, (*glow, 40))
-            color = HOVER_GREEN if hover and i != 1 else (
-                HOVER_BLUE if hover and i == 1 else (CYBER_GREEN if i != 1 else CYBER_BLUE))
-            arcade.draw_rectangle_rounded(SCREEN_WIDTH / 2, y, 270, 48, 12, color)
+                arcade.draw_lbwh_rectangle_filled(SCREEN_WIDTH / 2, y, 280 + math.sin(self.pulse * 4) * 15, 55, (*glow, 40))
+            color = CYBER_GREEN if hover and i != 1 else (
+                CYBER_BLUE if hover and i == 1 else (CYBER_GREEN if i != 1 else CYBER_BLUE))
+            arcade.draw_lbwh_rectangle_outline(SCREEN_WIDTH / 2, y, 270, 48, color,12)
             arcade.draw_text(item, SCREEN_WIDTH / 2, y - 8, TEXT_COLOR, 25, anchor_x="center", font_name="Arial",
                              bold=True)
         arcade.draw_text("↑ ↓ ВЫБОР | ENTER ПОДТВЕРДИТЬ", SCREEN_WIDTH / 2, 60, (150, 200, 255), 16, anchor_x="center")
@@ -110,8 +111,8 @@ class MainMenu(arcade.View):
     def draw_settings(self):
         arcade.draw_text("СИСТЕМНЫЕ НАСТРОЙКИ", SCREEN_WIDTH / 2, SCREEN_HEIGHT - 90, CYBER_BLUE, 38, anchor_x="center",
                          font_name="Arial", bold=True)
-        arcade.draw_rectangle_filled(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 480, 260, (25, 35, 60, 230))
-        arcade.draw_rectangle_outline(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 480, 260, CYBER_BLUE, 3)
+        arcade.draw_lbwh_rectangle_filled(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 480, 260, (25, 35, 60, 230))
+        arcade.draw_lbwh_rectangle_outline(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 480, 260, CYBER_BLUE, 3)
         arcade.draw_text("ЯРКОСТЬ", SCREEN_WIDTH / 2 - 160, SCREEN_HEIGHT / 2 + 75, CYBER_GREEN, 22, anchor_x="left",
                          font_name="Arial", bold=True)
         self.brightness_slider.draw()
@@ -122,7 +123,7 @@ class MainMenu(arcade.View):
         self.sensitivity_slider.draw()
         arcade.draw_text(f"{self.sensitivity_slider.val:.2f}", SCREEN_WIDTH / 2 + 200, SCREEN_HEIGHT / 2 + 10,
                          TEXT_COLOR, 18, anchor_x="left")
-        arcade.draw_rectangle_rounded(SCREEN_WIDTH / 2, 90, 180, 42, 10, (45, 60, 90))
+        arcade.draw_lbwh_rectangle_outline(SCREEN_WIDTH / 2, 90, 180, 42, (45, 60, 90), 10)
         arcade.draw_text("НАЗАД (ESC)", SCREEN_WIDTH / 2, 82, CYBER_BLUE, 21, anchor_x="center", font_name="Arial",
                          bold=True)
 
@@ -135,6 +136,8 @@ class MainMenu(arcade.View):
             elif key == arcade.key.ENTER:
                 if self.selected == 0:
                     print(f"Запуск: яркость={self.brightness:.2f}, чувств={self.sensitivity:.2f}")
+                    self.win.hide_view()
+                    self.win.show_view(game.MyGame(win=self.win))
                 elif self.selected == 1:
                     self.state = "settings"
                 elif self.selected == 2:
@@ -159,6 +162,8 @@ class MainMenu(arcade.View):
                 if abs(x - SCREEN_WIDTH / 2) < 135 and abs(y - btn_y) < 24:
                     if i == 0:
                         print(f"Запуск: яркость={self.brightness:.2f}, чувств={self.sensitivity:.2f}")
+                        self.win.hide_view()
+                        self.win.show_view(game.MyGame(win=self.win))
                     elif i == 1:
                         self.state = "settings"
                     elif i == 2:
@@ -183,7 +188,7 @@ class MainMenu(arcade.View):
 
 def main():
     window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE, resizable=False)
-    window.show_view(MainMenu())
+    window.show_view(MainMenu(window))
     arcade.run()
 
 
