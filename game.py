@@ -1,20 +1,11 @@
 from PIL import Image
 import arcade
 import io
+import json
+import main
+import random
 
 SPEED = 4
-dictionary = {
-    "shape": [120, 100],
-    "moving": [
-        [67, 30, 20],
-        [52, 50, 20],
-        ["<50", 70, 20]
-    ],
-    "walls": [[75, 70, 50, 10]],
-    "loot": [[67, 5]],
-    "enemies": [[12, 5]],
-    "exits": [1, 2, 3, 4]
-}
 
 
 def create_block(x, y, output_path='block.png'):
@@ -60,7 +51,7 @@ def create_block(x, y, output_path='block.png'):
     return result
 
 
-def make_room_walls(size_x, size_y):
+def make_room_walls(size_x, size_y, dictionary):
     corner = Image.open('biom1wall2.png').resize((15 * 5, 15 * 5), 0)
     wall = Image.open('biom1wall1.png').resize((15 * 5, 15 * 5), 0)
     exits = dictionary['exits']
@@ -112,16 +103,20 @@ def make_room_walls(size_x, size_y):
     return wall_images
 
 
-class MyGame(arcade.Window):
-    def __init__(self):
-        super().__init__(1200, 675, "fimoz game")
+class MyGame(arcade.View):
+    def __init__(self, win):
+        super().__init__()
         self.camera = arcade.camera.Camera2D()
+        with open("patterns.json", "r") as f:
+            d = json.loads(f.read())
+            self.dictionary = d[str(random.choice(list(d.keys())))]
         self.setup()
+        self.win = win
 
     def setup(self):
-        size_x = dictionary['shape'][0] // 5  # 24
-        size_y = dictionary['shape'][1] // 5  # 20
-        wall_data = make_room_walls(size_x, size_y)
+        size_x = self.dictionary['shape'][0] // 5  # 24
+        size_y = self.dictionary['shape'][1] // 5  # 20
+        wall_data = make_room_walls(size_x, size_y, self.dictionary)
 
         self.wall_list = arcade.SpriteList(use_spatial_hash=True)
 
@@ -173,14 +168,18 @@ class MyGame(arcade.Window):
             if self.physics_engine.can_jump():
                 self.player.change_y = 12
         elif key == arcade.key.ESCAPE:
-            arcade.close_window()
+            self.camera.position = (self.width // 2, self.height // 2)
+            self.camera.use()
+            self.win.hide_view()
+            self.win.show_view(main.MainMenu(win=self.win))
 
     def on_key_release(self, key, modifiers):
         if key in (arcade.key.LEFT, arcade.key.RIGHT):
             self.player.change_x = 0
 
-
+SCREEN_WIDTH, SCREEN_HEIGHT = 1024, 768
 if __name__ == "__main__":
-    game = MyGame()
+    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, "game", resizable=False)
+    window.show_view(MyGame(window))
     arcade.run()
 
